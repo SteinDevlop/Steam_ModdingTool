@@ -59,6 +59,11 @@ class ConfigTab(QWidget):
         self.edits["engine"] = engine_cb
         form.addRow("Engine", engine_cb)
 
+        # Steam App ID
+        steam_app_id_le = QLineEdit()
+        self.edits["steam_app_id"] = steam_app_id_le
+        form.addRow("Steam App ID", steam_app_id_le)
+
         # game_dir (directory)
         game_dir_le = QLineEdit()
         self.edits["game_dir"] = game_dir_le
@@ -174,6 +179,19 @@ class ConfigTab(QWidget):
             widget = self.edits.get(key)
             if widget:
                 widget.setText(f)
+            if key == "gameinfo_txt":
+                self._fill_app_id_from_gameinfo(f)
+
+    def _fill_app_id_from_gameinfo(self, gameinfo_path: str):
+        steam_app_id_widget = self.edits.get("steam_app_id")
+        if not steam_app_id_widget:
+            return
+        current_app_id = steam_app_id_widget.text().strip()
+        if current_app_id:
+            return
+        app_id = pm.extract_app_id_from_gameinfo(gameinfo_path)
+        if app_id:
+            steam_app_id_widget.setText(app_id)
 
     def load_profiles(self):
         self.profiles = pm.load_profiles()
@@ -252,8 +270,20 @@ class ConfigTab(QWidget):
         # preparar perfil
         profile = {k: "" for k in pm.PROFILE_FIELDS}
         profile["id"] = self.current_id if self.current_id else str(uuid.uuid4())
-        profile["active"] = False
+        if self.current_id:
+            existing = next((x for x in self.profiles if x.get("id") == self.current_id), {})
+            profile["active"] = bool(existing.get("active", False))
+        else:
+            profile["active"] = False
         profile.update(data)
+
+        # Si no hay app_id definido, tratar de extraerlo desde gameinfo.txt
+        if not profile.get("steam_app_id") and profile.get("gameinfo_txt"):
+            extracted_app_id = pm.extract_app_id_from_gameinfo(profile["gameinfo_txt"])
+            if extracted_app_id:
+                profile["steam_app_id"] = extracted_app_id
+                if isinstance(self.edits.get("steam_app_id"), QLineEdit):
+                    self.edits["steam_app_id"].setText(extracted_app_id)
 
         # validar engine value
         if profile.get("engine") not in ENGINE_CHOICES:
@@ -303,3 +333,9 @@ class ConfigTab(QWidget):
             return
         pm.set_active_profile(self.current_id)
         self.load_profiles()
+        self._notify_status_refresh()
+
+    def _notify_status_refresh(self):
+        window = self.window()
+        if hasattr(window, "update_status_profile"):
+            window.update_status_profile()

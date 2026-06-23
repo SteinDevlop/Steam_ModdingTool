@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from typing import List, Dict, Optional
 import uuid
@@ -93,6 +94,19 @@ def save_profiles(profiles: List[Dict]) -> None:
     _ensure_config_dir()
     with open(PROFILES_FILE, "w", encoding="utf-8") as f:
         json.dump(profiles, f, indent=2, ensure_ascii=False)
+
+def extract_app_id_from_gameinfo(gameinfo_path: str) -> Optional[str]:
+    """Extrae Steam App ID de un archivo gameinfo.txt si existe."""
+    try:
+        text = Path(gameinfo_path).read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return None
+    # Buscar valores comunes como SteamAppId, steamappid o appid
+    match = re.search(r'(?i)\b(?:steamappid|steam_app_id|appid|appId|AppId)\b[^"\d]*([0-9]{3,10})', text)
+    if match:
+        return match.group(1)
+    return None
+
 
 def validate_profile(profile: Dict) -> Dict:
     """
