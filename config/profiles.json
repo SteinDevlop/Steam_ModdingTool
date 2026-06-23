@@ -1,18 +1,3 @@
 [
-  {
-    "id": "c1cde446-394c-4000-8714-18f1f8453f89",
-    "name": "Left 4 Dead 2",
-    "engine": "Source",
-    "steam_app_id": "550",
-    "game_dir": "/home/steinman/.steam/steam/steamapps/common/Left 4 Dead 2",
-    "executable": "/home/steinman/.steam/steam/steamapps/common/Left 4 Dead 2/left4dead2.exe",
-    "executable_options": "",
-    "gameinfo_txt": "/home/steinman/.steam/steam/steamapps/common/Left 4 Dead 2/update/gameinfo.txt",
-    "model_compiler": "",
-    "model_viewer": "",
-    "mapping_tool": "",
-    "packer_tool": "",
-    "steam_executable": "/home/steinman/.steam/steam/steam.sh",
-    "active": true
-  }
+
 ]
